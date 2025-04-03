@@ -1,37 +1,49 @@
-const daysTag = document.querySelector(".days"),
+const daysTag = document.querySelector(".days"), //variables
 currentDate = document.querySelector(".current-date"),
 prevNextIcon = document.querySelectorAll(".icons span");
 
-let date = new Date(),
-Year = date.getFullYear(),
+let date = new Date();
+Year = date.getFullYear(), //variables
 Month = date.getMonth();
 
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+let appointments = {}; //creating object
+
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; //array of months
 
 const renderCalendar = () => {
-    let firstDay = new Date(Year, Month, 1).getDay(),
-    lastDate = new Date(Year, Month + 1, 0).getDate(),
-    lastDay = new Date(Year, Month, lastDate).getDay(),
-    lastDatePrev = new Date(Year, Month, 0).getDate();
+    
+    const currentDate = document.querySelector(".current-date");
+    const daysTag = document.querySelector(".days");
+
+
+    let firstDay = new Date(Year, Month, 1).getDay(), //first day of the month
+    lastDate = new Date(Year, Month + 1, 0).getDate(), //last date of the month
+    lastDay = new Date(Year, Month, lastDate).getDay(), //last day of the month
+    lastDatePrev = new Date(Year, Month, 0).getDate(); //last date of previous month
     let liTag = "";
-    for (let i = firstDay; i > 0; i--) {
+
+    for (let i = firstDay; i > 0; i--) { //last dates of previous month
         liTag += `<li class="inactive">${lastDatePrev - i + 1}</li>`;
     }
-    for (let i = 1; i <= lastDate; i++) {
-        
-        let isToday = i === date.getDate() && Month === new Date().getMonth() 
-            && Year === new Date().getFullYear() ? "active" : "";
-            liTag += `<li class="${isToday}" onclick="showMenu(${i})">${i}</li>`;
+
+    for (let i = 1; i <= lastDate; i++) { //creating days for current month
+        let fullDate = `${Year}-${String(Month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        let hasEvent = appointments[fullDate] ? "event" : "";
+
+        let isToday = i === date.getDate() && Month === new Date().getMonth() && Year === new Date().getFullYear() ? "active" : "";
+            liTag += `<li class="${isToday} ${hasEvent}" onclick="showMenu(${i})">${i}</li>`; //event class 
     }
-    for (let i = lastDay; i < 6; i++) { 
+    
+    for (let i = lastDay; i < 6; i++) { //next month inactive days
         liTag += `<li class="inactive">${i - lastDay + 1}</li>`
-    }
+    } 
     currentDate.innerText = `${months[Month]} ${Year}`;
     daysTag.innerHTML = liTag;
 }
-renderCalendar();
+renderCalendar(); //rendering page when loading in
 
-prevNextIcon.forEach(icon => {
+
+prevNextIcon.forEach(icon => { //next and previous months buttons
     icon.addEventListener("click", () => {
         Month = icon.id === "prev" ? Month - 1 : Month + 1;
         if(Month < 0 || Month > 11) {
@@ -42,17 +54,17 @@ prevNextIcon.forEach(icon => {
         else {
             date = new Date();
         }
-        renderCalendar();
+        renderCalendar(); //renders next month
     });
 });
 
-function showMenu(day) {
+function showMenu(day) { //creating menu popup
     const menu = document.createElement("div");
     menu.classList.add("popup");
-    menu.innerHTML = `<form method="post" action="" id"form" onsubmit="store(event)">
+    menu.innerHTML = `<form method="post" action="" id"form" onsubmit="store(event, ${day})">
     <div class="appointment">
     <legend>
-    Book an appointment for ${Year}/${Month + 1}/${day}
+    Book an event for ${Year}/${Month + 1}/${day}
     </legend>
     </div>
 		<fieldset>
@@ -75,16 +87,16 @@ function showMenu(day) {
     menu.classList.add("show");
 }
 
-function confirmation() {
+function confirmation() { //submit button
     const confirm = document.createElement("div");
     confirm.classList.add("popup");
-    confirm.innerHTML = `<p>Your appointment has been booked. Thank you!</p>
+    confirm.innerHTML = `<p>Your event has been booked. Thank you!</p>
         <button onclick="closeMessage()">Close</button>`;
     document.body.appendChild(confirm);
     confirm.classList.add("show");
 }
 
-function closeMenu() {
+function closeMenu() { //close button
     const menu = document.querySelector(".popup");
     if (menu) {
         menu.classList.remove("show");
@@ -94,7 +106,7 @@ function closeMenu() {
     }
 }
 
-function closeMessage() {
+function closeMessage() { //closing confirmation message
     const confirm = document.querySelector(".popup");
     if (confirm) {
         confirm.classList.remove("show");
@@ -104,7 +116,7 @@ function closeMessage() {
     }
 }
 
-function display() {
+function display() { //display box to the side of calendar
     const savedDataBox = document.getElementById("savedData");
 
     const name = localStorage.getItem("name") || "Not available";
@@ -112,8 +124,10 @@ function display() {
     const time = localStorage.getItem("time") || "Not available";
     const method = localStorage.getItem("method") || "Not specified";
     const reason = localStorage.getItem("reason") || "None specified";
+    const date = localStorage.getItem("date");
 
     savedDataBox.innerHTML = `
+    <p>Date:</strong> ${date || "Not available"}</p>
         <p>Name:</strong> ${name}</p>
         <p>Email:</strong> ${email}</p>
         <p>Time:</strong> ${time}</p>
@@ -122,7 +136,7 @@ function display() {
     `;
 }
 
-function store(event) {
+function store(event, day) { //storing details in local storage
     event.preventDefault();
 
     var name = document.getElementById("name").value;
@@ -131,6 +145,14 @@ function store(event) {
     var method = document.querySelector('input[name="method"]:checked')?.value || 'Not specified';
     var reason = document.querySelector("textarea[name='reason']").value;
 
+    let fullDate = `${Year}-${String(Month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    if (!name && !email && !time && !method && !reason) {
+        savedDataBox.style.display = "none";
+        return;
+    }
+
+    localStorage.setItem("date", fullDate);
     localStorage.setItem("name", name);
     localStorage.setItem("email", email);
     localStorage.setItem("time", time);
@@ -143,6 +165,10 @@ function store(event) {
     closeMenu();
     confirmation();
     display();
+
+    fullDate = `${Year}-${String(Month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+appointments[fullDate] = true; // Mark the date as booked
+renderCalendar();
 }
 
 window.addEventListener("DOMContentLoaded", function() {

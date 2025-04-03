@@ -54,6 +54,14 @@ header .icons span:last-child{
 	flex-wrap: wrap;
 	text-align: center;
 }
+
+.days li {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .calendar .days li{
 	margin-bottom: 20px;
 }
@@ -86,12 +94,30 @@ header .icons span:last-child{
 	z-index: -1;
 	border-radius: 50%;
 	transform: translate(-50%, -50%);
+	margin: auto;
 }
 .days li:hover::before{
 		background: #f2f2f2;
 }
 .days li.active::before{
 	background: aquamarine;
+	width: 40px !important;  
+    height: 40px !important;
+}
+.event {
+    background-color: #5f8d8d; /* Your highlight color */
+    color: white;
+    border-radius: 50%;
+    width: 40px !important;  
+    height: 40px !important;
+    line-height: 35px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+	padding: 0 !important;
+
 }
 .popup {
 	display: none;
